@@ -42,7 +42,7 @@ const WEIGHT = { warn: 3, info: 1 } as const;
 export function slopScore(findings: Finding[], words: number): number {
   const points = findings.reduce((s, f) => s + (f.weight ?? WEIGHT[f.severity]), 0);
   // Calibrated so a hand-written README like ripgrep's lands in A and a template-generated one in D or F.
-  return Math.min(100, Math.round((points * 1000) / Math.max(words, 150)));
+  return Math.min(100, Math.round((points * 1000) / Math.max(words, 300)));
 }
 
 export function grade(score: number): Grade {

@@ -26,30 +26,36 @@ examples/slop.md
   11:1   warn  5 “**Name**: description” bullets. That is a table; readers scan a column faster than a list. ✎  bold-list
   …
 
-  slop score 100/100 · grade F · 49 findings · 16 fixable with --fix
+  slop score 100/100 · grade F · 53 findings · 16 fixable with --fix
 ```
 
 It reads English and Chinese, and its messages follow your system locale (`--lang en|zh` to override).
 
 ## Rules
 
-| Rule | Flags | `--fix` |
-| --- | --- | --- |
-| `hype` | Adjectives that claim instead of show: `blazing fast`, `cutting-edge`, `seamless`, `一站式`, `赋能` | |
-| `filler` | Phrases a sentence works without: `In today's fast-paced world`, `It's worth noting that`, `值得注意的是` | |
-| `not-just` | `It's not just X, it's Y`, `不仅仅是……更是……` | |
-| `wordy` | `in order to`, `utilize`, `a wide range of`, `能够`, `进行优化` | ✓ |
-| `bold-list` | Three or more `- **Name**: description` bullets | ✓ becomes a table |
-| `emoji-bullets` | Lists where every item starts with an emoji | ✓ |
-| `emoji-headings` | Two or more headings with emoji | ✓ |
-| `generic-heading` | Overview, Introduction, Key Features, Why Choose X, Conclusion, 总结 | |
-| `long-paragraph` | Paragraphs over 80 words (160 Chinese characters) | |
-| `em-dash` | More than one em dash per 150 words | |
-| `exclamation` | `!` at the end of prose sentences | ✓ |
-| `badge-wall` | More than 6 badges | |
-| `late-quickstart` | No shell command in the first 40 lines | |
+| Rule | Flags | `--fix` | Source |
+| --- | --- | --- | --- |
+| `chatbot` | Chat leftovers: `I hope this helps`, `Certainly!`, `as of my last training update`, `[Your Name]`, `utm_source=chatgpt.com` links, `以下是为你生成的` | | W |
+| `hype` | Claims without evidence: `blazing fast`, `cutting-edge`, `plays a pivotal role`, `stands as a testament`, `一站式`, `赋能`, `至关重要` | | W |
+| `filler` | Phrases a sentence works without: `In today's fast-paced world`, `Let's dive in`, `It's worth noting that`, `说白了`, `核心是：` | | W, Z |
+| `not-just` | `It's not just X, it's Y`, `not only … but also`, `不是……而是……`, `与其说……不如说` | | W, Z |
+| `ai-vocab` | Words whose use jumped after ChatGPT: `delve`, `showcase`, `underscore`, `intricate`, `meticulous`, `realm`, `tapestry` | | K, W |
+| `ing-tail` | `…, underscoring its importance` tacked onto a fact | | W |
+| `wordy` | `in order to`, `utilize`, `serves as`, `a wide range of`, `能够`, `进行优化` | ✓ | W |
+| `bold-list` | Three or more `- **Name**: description` bullets | ✓ becomes a table | W |
+| `emoji-bullets` | Lists where every item starts with an emoji | ✓ | W |
+| `emoji-headings` | Two or more headings with emoji | ✓ | W |
+| `numbered-headings` | Three or more Chinese headings numbered `一、二、三、` | ✓ | Z |
+| `title-case` | Most headings In Title Case | | W |
+| `generic-heading` | Overview, Introduction, Key Features, Why Choose X, Conclusion, 总结 | | W |
+| `long-paragraph` | Paragraphs over 80 words (160 Chinese characters) | | |
+| `em-dash` | More than one em dash (`—` or `——`) per 150 words | | W, Z |
+| `bold-overuse` | More than one bold phrase per 60 words | | W |
+| `exclamation` | `!` at the end of prose sentences | ✓ | |
+| `badge-wall` | More than 6 badges | | |
+| `late-quickstart` | No shell command in the first 40 lines | | |
 
-Code blocks, inline code, URLs and HTML are never checked, so `--seamless` as a flag name is fine.
+Code blocks, inline code, URLs and HTML are never checked, so `--seamless` as a flag name is fine. A phrase inside quotation marks is being talked about, not used, so it is skipped too.
 
 `--fix` only makes changes that are right in every sentence a pattern can match. It will not delete a word that starts a sentence, and it never touches code. Run it twice and nothing changes the second time. Everything else needs a person, or the [Claude Code skill](#claude-code-skill).
 
@@ -72,6 +78,18 @@ Show yours:
 ```sh
 npx dontreadme-cli --badge
 ```
+
+## Where the rules come from
+
+Every pattern is traceable to one of these, marked in the Source column above and next to each pattern in [`src/rules/phrases.ts`](src/rules/phrases.ts):
+
+- K is [Kobak et al. 2025](https://www.science.org/doi/full/10.1126/sciadv.adt3813) in Science Advances, a study of excess vocabulary in PubMed abstracts. From [their published PubMed counts](https://github.com/berenslab/llm-excess-vocab), `delves` appears in 48× as many abstracts in 2024 as in 2022, `showcasing` and `underscores` 14×, `meticulously` 10×. `ai-vocab` keeps the style words with a ratio of about 2.5 or more that also show up in READMEs.
+- W is Wikipedia's [Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), the field guide of WikiProject AI Cleanup, as catalogued by [blader/humanizer](https://github.com/blader/humanizer) and [sloptrim](https://github.com/seyedehsanhadi/sloptrim).
+- Z is [lieflat-less-ai-tone](https://github.com/larashero3-dotcom/lieflat-less-ai-tone), which compared 300 AI-written and 329 human Chinese articles (2.8 million characters) and kept a pattern only when models used it at least twice as often as people. Several Chinese patterns that feel like AI writing did not pass that test and are not here.
+
+The other rules are about READMEs specifically: what a reader needs on the first screen and how fast they can scan it.
+
+No single finding proves a README was generated. The guide's own advice applies: several signs together are what matter, which is why the score counts density rather than any one hit. Before tuning a rule, it was run against hand-written READMEs (ripgrep, bat, fd, fzf, jq, uv, gh, chalk, xsv): all score A or B.
 
 ## GitHub Action
 

@@ -34,7 +34,7 @@ export const emDash: Rule = {
   severity: "warn",
   summary: { en: "Em dashes at a rate no person types them", zh: "密度高到不像人手打的破折号" },
   check(doc) {
-    const dashes = [...doc.prose.matchAll(/—/g)];
+    const dashes = [...doc.prose.matchAll(/——|—/g)];
     // About one per 150 words is a writer who likes dashes. More is a model.
     const allowed = Math.max(2, Math.floor(doc.words / 150));
     if (dashes.length <= allowed) return [];
@@ -117,6 +117,34 @@ export const lateQuickstart: Rule = {
               zh: `第一条命令在第 ${first.start + 1} 行。把安装和一行示例放到最前面。`,
             }
           : { en: "No install or run command anywhere. Show how to try it.", zh: "全文没有安装或运行命令。告诉读者怎么上手试。" },
+      },
+    ];
+  },
+};
+
+export const boldOveruse: Rule = {
+  id: "bold-overuse",
+  severity: "info",
+  summary: { en: "Bold on so many phrases that nothing stands out", zh: "加粗太多，反而什么都不突出" },
+  check(doc) {
+    // List labels are counted by bold-list; this is bold sprinkled through sentences and table cells.
+    const bold = [...doc.prose.matchAll(/(?<![*\w])\*\*(?!\s)[^*\n]{1,80}?\*\*(?![*\w])/g)].filter((m) => {
+      const lineStart = doc.text.lastIndexOf("\n", m.index ?? 0) + 1;
+      return !/^\s*([-*+]|\d+[.)])\s+$/.test(doc.text.slice(lineStart, m.index));
+    });
+    // [W] About one bold phrase per 60 words is emphasis. More is decoration.
+    const allowed = Math.max(4, Math.floor(doc.words / 60));
+    if (bold.length <= allowed) return [];
+    return [
+      {
+        rule: this.id,
+        severity: this.severity,
+        ...position(doc, bold[0].index ?? 0),
+        weight: Math.min(15, bold.length - allowed),
+        message: {
+          en: `${bold.length} bold phrases in ${doc.words} words. Keep bold for the one thing per section a skimmer must not miss.`,
+          zh: `约 ${doc.words * 2} 字里加粗了 ${bold.length} 处。每节只留一个读者绝不能漏看的加粗。`,
+        },
       },
     ];
   },

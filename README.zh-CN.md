@@ -32,23 +32,29 @@ examples/slop.zh-CN.md
 
 ## 规则
 
-| 规则 | 检查什么 | `--fix` |
-| --- | --- | --- |
-| `hype` | 只下结论不给证据的形容词：`一站式`、`赋能`、`极致`、`blazing fast`、`seamless` | |
-| `filler` | 删掉句子照样成立的套话：`值得注意的是`、`随着……的飞速发展`、`In today's fast-paced world` | |
-| `not-just` | `不仅仅是……更是……`、`It's not just X, it's Y` | |
-| `wordy` | `能够`、`通过使用`、`进行优化`、`in order to`、`utilize` | ✓ |
-| `bold-list` | 三条以上 `- **名称**：说明` 格式的列表 | ✓ 改成表格 |
-| `emoji-bullets` | 每一条都以 emoji 开头的列表 | ✓ |
-| `emoji-headings` | 两个以上带 emoji 的标题 | ✓ |
-| `generic-heading` | 简介、概述、核心特性、为什么选择 X、总结、写在最后 | |
-| `long-paragraph` | 超过约 160 字（80 个英文词）的段落 | |
-| `em-dash` | 每 150 词超过一个破折号 | |
-| `exclamation` | 正文句末的感叹号 | ✓ |
-| `badge-wall` | 超过 6 个徽章 | |
-| `late-quickstart` | 前 40 行里没有命令 | |
+| 规则 | 检查什么 | `--fix` | 依据 |
+| --- | --- | --- | --- |
+| `chatbot` | 聊天残留：`以下是为你生成的`、`希望对你有帮助`、`I hope this helps`、`[Your Name]` 占位符、带 `utm_source=chatgpt.com` 的链接 | | W |
+| `hype` | 只下结论不给证据：`一站式`、`赋能`、`至关重要`、`举足轻重`、`blazing fast`、`plays a pivotal role` | | W |
+| `filler` | 删掉句子照样成立的套话：`值得注意的是`、`说白了`、`核心是：`、`随着……的飞速发展`、`Let's dive in` | | W, Z |
+| `not-just` | `不是……而是……`、`不仅仅是……更是……`、`与其说……不如说`、`It's not just X, it's Y` | | W, Z |
+| `ai-vocab` | ChatGPT 之后使用率暴涨的英文词：`delve`、`showcase`、`underscore`、`intricate`、`meticulous` | | K, W |
+| `ing-tail` | 英文句尾硬加的 `…, underscoring its importance` | | W |
+| `wordy` | `能够`、`通过使用`、`进行优化`、`这意味着`、`in order to`、`serves as` | ✓ | W, Z |
+| `bold-list` | 三条以上 `- **名称**：说明` 格式的列表 | ✓ 改成表格 | W |
+| `emoji-bullets` | 每一条都以 emoji 开头的列表 | ✓ | W |
+| `emoji-headings` | 两个以上带 emoji 的标题 | ✓ | W |
+| `numbered-headings` | 三个以上用 `一、二、三、` 编号的小标题 | ✓ | Z |
+| `title-case` | 大部分英文标题用了 Title Case | | W |
+| `generic-heading` | 简介、概述、核心特性、为什么选择 X、总结、写在最后 | | W |
+| `long-paragraph` | 超过约 160 字（80 个英文词）的段落 | | |
+| `em-dash` | 每 150 词超过一个破折号（`—` 或 `——`） | | W, Z |
+| `bold-overuse` | 每 60 词超过一处加粗 | | W |
+| `exclamation` | 正文句末的感叹号 | ✓ | |
+| `badge-wall` | 超过 6 个徽章 | | |
+| `late-quickstart` | 前 40 行里没有命令 | | |
 
-代码块、行内代码、链接地址和 HTML 不参与检查，所以参数名叫 `--seamless` 没问题。
+代码块、行内代码、链接地址和 HTML 不参与检查，所以参数名叫 `--seamless` 没问题。放在引号里的词（比如「赋能」）是在被讨论而不是被使用，也会跳过。
 
 `--fix` 只做在任何句子里都正确的修改：不会删掉句首的词，也不会碰代码。连续运行两次，第二次不会再有改动。其余问题需要人来改，或者交给 [Claude Code skill](#claude-code-skill)。
 
@@ -71,6 +77,18 @@ examples/slop.zh-CN.md
 ```sh
 npx dontreadme-cli --badge
 ```
+
+## 规则从哪来
+
+每条规则都能追溯到下面的来源，对应上表的“依据”一列，[`src/rules/phrases.ts`](src/rules/phrases.ts) 里每个短语旁边也有标注：
+
+- K 是 [Kobak 等 2025](https://www.science.org/doi/full/10.1126/sciadv.adt3813)，发表在 Science Advances，研究 PubMed 摘要里的超额词汇。按[作者公开的 PubMed 词频数据](https://github.com/berenslab/llm-excess-vocab)计算，2024 年含 `delves` 的摘要比例是 2022 年的 48 倍，`showcasing` 和 `underscores` 是 14 倍，`meticulously` 是 10 倍。`ai-vocab` 只收倍率约 2.5 以上、且在 README 里会出现的风格词。
+- W 是 Wikipedia 的 [Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)（WikiProject AI Cleanup 整理的识别指南），参考了 [blader/humanizer](https://github.com/blader/humanizer) 和 [sloptrim](https://github.com/seyedehsanhadi/sloptrim) 的整理。
+- Z 是 [lieflat-less-ai-tone](https://github.com/larashero3-dotcom/lieflat-less-ai-tone) 的中文语料实测：300 篇 AI 文章对 329 篇人写文章，共 283 万字，只有 AI 用量达到人类 2 倍以上的句式才算数。一些“感觉很像 AI”但没通过实测的中文句式，这里没有收。
+
+其余几条规则针对 README 本身：读者第一屏需要看到什么，以及能多快扫完。
+
+单独一处命中不能证明 README 是 AI 写的。指南里的原则同样适用：要看多处特征是否同时出现，所以分数统计的是密度，不看单次命中。调规则之前，先拿人写的 README（ripgrep、bat、fd、fzf、jq、uv、gh、chalk、xsv）跑过一遍，结果全部是 A 或 B。
 
 ## GitHub Action
 

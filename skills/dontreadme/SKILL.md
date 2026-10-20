@@ -22,11 +22,16 @@ description: Rewrite a README so it stops sounding generated. Use when the user 
 
    | Rule | What to do |
    | --- | --- |
+   | `chatbot` | Delete it. Fill or remove `[placeholders]`. Strip `utm_source=chatgpt.com` and citation markup from links. |
    | `hype` | Replace the adjective with the fact behind it, found in the repo: a benchmark, a size, a count, a supported platform. If there is no fact, delete the word. |
    | `filler` | Delete the phrase and repair the sentence. |
    | `not-just` | Say what the thing is in one plain sentence. Drop the contrast. |
+   | `ai-vocab` | Use the plain word: `delve into` → `look at`, `showcase` → `show`, `underscore` → `show` or cut, `leverage` → `use`. |
+   | `ing-tail` | End the sentence at the fact. If the consequence matters, state it as its own sentence with evidence. |
    | `wordy` | Use the shorter form the message gives. |
    | `bold-list`, `emoji-bullets` | `--fix` usually handled these. If not, turn the list into a two-column table by hand. |
+   | `title-case`, `numbered-headings` | Sentence case; drop `一、二、三、` numbering. Keep proper nouns capitalised. |
+   | `bold-overuse` | Keep at most one bold phrase per section. |
    | `emoji-headings`, `generic-heading` | Rename the section after what it contains, or merge it into a neighbour. Delete Overview and Conclusion sections that repeat the rest. |
    | `long-paragraph` | Split it. Pull options, steps or comparisons out into a list or table. |
    | `em-dash` | Replace most dashes with a full stop, comma, colon or parentheses. |

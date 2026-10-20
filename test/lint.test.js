@@ -149,6 +149,58 @@ test("fix is idempotent", () => {
 });
 
 test("score scales with density and grades follow it", () => {
-  assert.equal(lint("A robust tool.").score > lint("```sh\nx\n```\n\nA robust tool.\n\n" + "Plain words here.\n\n".repeat(100)).score, true);
+  assert.equal(lint("A robust tool.").score > lint("```sh\nx\n```\n\nA robust tool.\n\n" + "Plain words here.\n\n".repeat(300)).score, true);
   assert.deepEqual([0, 9, 10, 24, 25, 44, 45, 69, 70, 100].map(grade), ["A", "A", "B", "B", "C", "C", "D", "D", "F", "F"]);
+});
+
+test("chat leftovers, in prose and in pasted links", () => {
+  assert.deepEqual(ids("Certainly! Here is a README for your project.").filter((r) => r === "chatbot").length, 2);
+  assert.ok(ids("I hope this helps.").includes("chatbot"));
+  assert.ok(ids("Set it up as of my last training update.").includes("chatbot"));
+  assert.ok(ids("Contact [Your Name] for access.").includes("chatbot"));
+  assert.ok(ids("See [the docs](https://example.com/?utm_source=chatgpt.com).").includes("chatbot"));
+  assert.ok(ids("以下是为你生成的 README。").includes("chatbot"));
+  assert.deepEqual(ids("Pass `[your token]` as the first argument."), []);
+  assert.deepEqual(ids("Links like `?utm_source=chatgpt.com` are flagged."), []);
+});
+
+test("excess vocabulary from the PubMed study, without technical nouns", () => {
+  assert.deepEqual(ids("This tool showcases intricate parsing."), ["ai-vocab", "ai-vocab"]);
+  assert.deepEqual(ids("The test harness runs in CI."), []);
+});
+
+test("-ing tails, but not syntax highlighting", () => {
+  assert.deepEqual(ids("It was rewritten in Rust, underscoring its speed."), ["ing-tail", "ai-vocab"]);
+  assert.deepEqual(ids("Prints files with colors, highlighting syntax."), []);
+});
+
+test("Chinese contrast framing and hype, but not closed-loop control", () => {
+  assert.deepEqual(ids("真正的壁垒不是技术，而是认知。"), ["not-just"]);
+  assert.deepEqual(ids("它采用闭环控制。"), []);
+  assert.deepEqual(ids("说白了，预算不够。"), ["filler"]);
+  assert.deepEqual(ids("核心是：先跑起来。"), ["filler"]);
+});
+
+test("phrases being quoted are mentioned, not used", () => {
+  assert.deepEqual(ids("Words like “seamless” and 「赋能」 are flagged."), []);
+  assert.deepEqual(ids("A seamless tool."), ["hype"]);
+});
+
+test("numbered Chinese headings are stripped, title case is noted", () => {
+  const zhDoc = "## 一、安装\n\n## 二、配置\n\n## 三、使用\n";
+  assert.equal(ids(zhDoc).filter((r) => r === "numbered-headings").length, 3);
+  assert.equal(fix(zhDoc).text, "## 安装\n\n## 配置\n\n## 使用\n");
+  const tc = "## Getting Started With It\n\n## Advanced Configuration Options\n\n## Frequently Asked Questions\n";
+  assert.deepEqual(ids(tc), ["title-case"]);
+  assert.deepEqual(ids("## Getting started with it\n\n## Advanced configuration options\n\n## Frequently asked questions\n"), []);
+});
+
+test("bold sprinkled through prose", () => {
+  const text = Array.from({ length: 8 }, (_, i) => `Item **${i}** is here.`).join(" ");
+  assert.deepEqual(ids(text), ["bold-overuse"]);
+  assert.deepEqual(ids("One **important** note."), []);
+});
+
+test("Chinese em dashes count too", () => {
+  assert.deepEqual(ids("甲——乙——丙——丁——戊"), ["em-dash"]);
 });

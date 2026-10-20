@@ -67,7 +67,7 @@ export const boldList: Rule = {
 
 export const emojiBullets: Rule = {
   id: "emoji-bullets",
-  severity: "warn",
+  severity: "info",
   summary: { en: "Lists where every item starts with an emoji", zh: "每一条都以 emoji 开头的列表" },
   check(doc) {
     const out: Finding[] = [];
@@ -80,6 +80,7 @@ export const emojiBullets: Rule = {
         severity: this.severity,
         line: b.start + 1,
         col: 1,
+        weight: 2,
         message: {
           en: `${items.length} bullets each led by an emoji. They decorate, they don't inform.`,
           zh: `${items.length} 条列表都用 emoji 开头，只是装饰，不带信息。`,
@@ -139,5 +140,61 @@ export const genericHeadings: Rule = {
       });
     }
     return out;
+  },
+};
+
+const NUMBERED = /^(\s*#{1,6}\s+)((?:[一二三四五六七八九十]{1,3}|第[一二三四五六七八九十]{1,3}(?:部分|步|章|节)?)[、.．:：]\s*)(.+)$/u;
+
+export const numberedHeadings: Rule = {
+  id: "numbered-headings",
+  severity: "info",
+  summary: { en: "Chinese headings numbered 一、二、三、", zh: "用 “一、二、三、” 给小标题编号" },
+  check(doc) {
+    // [Z] 序数词当小标题 3.1x. Three in a row is a template; one or two may be deliberate.
+    const hits = doc.blocks
+      .filter((b) => b.kind === "heading")
+      .map((b) => ({ b, m: NUMBERED.exec(doc.lines[b.start]) }))
+      .filter((h) => h.m);
+    if (hits.length < 3) return [];
+    return hits.map(({ b, m }) => ({
+      rule: this.id,
+      severity: this.severity,
+      line: b.start + 1,
+      col: m![1].length + 1,
+      message: { en: "Numbered heading. Let the heading say what the section is about.", zh: "小标题编号。让标题本身说明这一节讲什么，编号删掉。" },
+      fix: [lineEdit(doc, b.start, m![1] + m![3])],
+    }));
+  },
+};
+
+// Words that stay lowercase in title case, so "Getting Started with the CLI" counts as title case.
+const MINOR = new Set("a an and as at but by for from in into nor of on or over per the to up via vs with".split(" "));
+
+export const titleCase: Rule = {
+  id: "title-case",
+  severity: "info",
+  summary: { en: "Most headings In Title Case", zh: "大部分英文标题用了 Title Case" },
+  check(doc) {
+    const heads = doc.blocks
+      .filter((b) => b.kind === "heading" && b.level > 1)
+      .map((b) => ({ b, words: doc.lines[b.start].replace(/^\s*#{1,6}\s+/, "").replace(/`[^`]*`/g, "").match(/[A-Za-z][\w'’-]*/g) ?? [] }))
+      .filter((h) => h.words.length >= 3);
+    const isTitle = (w: string[]) => w.slice(1).every((x) => MINOR.has(x.toLowerCase()) || /^[A-Z0-9]/.test(x)) && w.slice(1).some((x) => /^[A-Z][a-z]/.test(x));
+    const titled = heads.filter((h) => isTitle(h.words));
+    // [W] One Title Case heading is a style guide. Most of them, across several, is a template.
+    if (titled.length < 3 || titled.length * 2 < heads.length) return [];
+    return [
+      {
+        rule: this.id,
+        severity: this.severity,
+        line: titled[0].b.start + 1,
+        col: 1,
+        weight: 2,
+        message: {
+          en: `${titled.length} of ${heads.length} headings are In Title Case. Sentence case reads as written, not generated.`,
+          zh: `${heads.length} 个英文标题里有 ${titled.length} 个用了 Title Case。改成只有首字母大写更自然。`,
+        },
+      },
+    ];
   },
 };

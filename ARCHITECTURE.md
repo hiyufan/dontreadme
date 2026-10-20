@@ -28,7 +28,9 @@ dontreadme is a linter with three users: a person at a terminal, a CI job, and a
 
 **Rules are pure.** A rule gets the parsed document and returns findings. It does not read the config, the locale or other rules. Severity overrides, `allow` lists and `<!-- dontreadme-disable -->` directives are applied afterwards in `lint.ts`. Any rule can be tested by handing it a string.
 
-**Phrases are data.** Hype, filler and wordy phrases are lists of patterns with an optional replacement. The rule writes the message, so adding a phrase is one line and cannot produce an inconsistent message.
+**Phrases are data, and each has a source.** Hype, filler, wordy and the other phrase rules are lists of patterns with an optional replacement. The rule writes the message, so adding a phrase is one line and cannot produce an inconsistent message. Every list is tagged with where its patterns come from: measured word frequencies (Kobak et al. 2025), Wikipedia's field guide, or a measured Chinese corpus. A pattern that only feels generated does not get in.
+
+**Mentioned is not used.** A phrase directly inside quotation marks (`“seamless”`, `「赋能」`) is being discussed, so phrase rules skip it. Chat artefacts in links (`utm_source=chatgpt.com`) are read from the raw text, since the prose mask hides URLs, but are skipped inside code.
 
 **Messages carry both languages.** A finding holds `{ en, zh }`. The reporter picks one at the end. Rules never branch on the locale, and JSON consumers get the language they asked for.
 
