@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "badge-wall": "off",
+    "long-paragraph": "info"
+  },
+  "allow": ["comprehensive"],
+  "maxScore": 25
+}

@@ -1,0 +1,18 @@
+name: Suggest a phrase or rule
+description: A tell that dontreadme misses
+labels: [new-rule]
+body:
+  - type: input
+    id: phrase
+    attributes:
+      label: Phrase or pattern
+      placeholder: e.g. "a breeze to use", "赋能"
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Where you have seen it
+      description: Links to a couple of READMEs that use it, and a plain rewrite.
+    validations:
+      required: true

@@ -1,0 +1,54 @@
+{
+  "name": "dontreadme-cli",
+  "version": "0.1.0",
+  "description": "Lint the AI voice out of your README: hype words, filler, \"it's not just X\" framing, bullet lists that should be tables. English and Chinese. Zero dependencies.",
+  "keywords": [
+    "readme",
+    "markdown",
+    "linter",
+    "ai-slop",
+    "anti-slop",
+    "writing",
+    "documentation",
+    "github-action",
+    "claude-code",
+    "agent-skills",
+    "cli"
+  ],
+  "author": "hiyufan",
+  "license": "MIT",
+  "homepage": "https://github.com/hiyufan/dontreadme#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiyufan/dontreadme.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hiyufan/dontreadme/issues"
+  },
+  "type": "module",
+  "bin": {
+    "dontreadme": "dist/cli.js",
+    "dontreadme-cli": "dist/cli.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "npm run build && node --test test/lint.test.js test/cli.test.js",
+    "start": "node dist/cli.js",
+    "prepublishOnly": "npm test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

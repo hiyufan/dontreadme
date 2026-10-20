@@ -1,0 +1,23 @@
+name: False positive or wrong fix
+description: dontreadme flagged good writing, or --fix made something worse
+labels: [false-positive]
+body:
+  - type: textarea
+    id: text
+    attributes:
+      label: The Markdown
+      description: The smallest snippet that shows the problem.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What dontreadme said or did, and what you expected
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: dontreadme-cli version
+      placeholder: 0.1.0

@@ -1,0 +1,35 @@
+name: dontreadme
+description: Lint the AI voice out of your README. Annotates the pull request and writes a score to the job summary.
+author: hiyufan
+branding:
+  icon: file-text
+  color: gray-dark
+
+inputs:
+  files:
+    description: Markdown files to check, space separated. Shell globs work.
+    default: README.md
+  max-score:
+    description: Fail the step when a file's slop score is above this (0-100). Leave empty to never fail.
+    default: "30"
+  lang:
+    description: Language of the annotations, en or zh.
+    default: en
+  version:
+    description: dontreadme-cli version to run from npm.
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        FILES: ${{ inputs.files }}
+        MAX_SCORE: ${{ inputs.max-score }}
+        DONTREADME_LANG: ${{ inputs.lang }}
+        VERSION: ${{ inputs.version }}
+      run: |
+        args=(--format github)
+        [ -n "$MAX_SCORE" ] && args+=(--max-score "$MAX_SCORE")
+        # $FILES is left unquoted on purpose so globs and multiple files expand.
+        npx --yes "dontreadme-cli@$VERSION" $FILES "${args[@]}"
