@@ -9,11 +9,54 @@
 
 <a href="README.md">English</a> · <b>简体中文</b>
 
-专门检查 README 里 AI 腔的 linter。它会标出宣传语、套话、`不仅仅是……更是……` 句式、本该是表格的列表、带 emoji 的标题和大段文字，给文件打分，并自动修掉不需要判断的部分。
+一个让 agent 帮你改 README 的 skill，目标是读起来不像 AI 写的。它先用内置的 linter 检查文件，自动修掉不需要判断的部分，再用仓库里的真实信息改写剩下的问题，最后复查一遍。中英文都支持。
+
+**改写前**（[`examples/slop.zh-CN.md`](examples/slop.zh-CN.md)，评级 F）：
+
+<!-- dontreadme-disable-next-line -->
+> 随着互联网技术的飞速发展，开发者对数据存储提出了更高的要求。FluxDB 不仅仅是一个数据库，更是一套全方位赋能开发者的数据解决方案。它能够帮助你无缝对接各类云平台，真正做到降本增效、业界领先。
+
+**改写后**（改写示例，评级 A，只用了原文件其他地方写明的事实）：
+
+> FluxDB 是一个键值数据库，读取延迟低于 1 毫秒，数据全程加密，支持插件扩展，安装后无需配置。
+
+## 安装
+
+Claude Code：
+
+```text
+/plugin marketplace add hiyufan/dontreadme
+/plugin install dontreadme@dontreadme
+```
+
+Codex、Cursor、Gemini CLI 等其他 agent：
+
+```sh
+npx skills add hiyufan/dontreadme
+```
+
+Claude.ai 和 Claude 桌面版：把仓库下载成 ZIP（**Code → Download ZIP**），在 **设置 → Capabilities → Skills** 里上传。
+
+## 使用
+
+直接说：
+
+```text
+帮我把 README 的 AI 味去掉。
+Clean up the README.
+```
+
+也可以用 `/dontreadme` 直接调用。agent 会告诉你改写前后的分数、改了哪些地方，以及哪些问题是有意保留的。它不会编数字：仓库里找不到依据的说法会被删掉，而不是换成新的说法。
+
+skill 里的 linter 只需要 Node 18 以上，不用安装任何东西。没有 Node 时，agent 会按 [`SKILL.md`](SKILL.md) 里的清单逐条检查。
+
+## 命令行和 CI
+
+同一个 linter 也发布在 npm 上，可以在终端和流水线里用：
 
 ```sh
 npx dontreadme-cli            # 检查 ./README.md
-npx dontreadme-cli --fix      # 就地修复能安全修复的问题
+npx dontreadme-cli --fix      # 自动修复不需要判断的问题
 ```
 
 ```text
@@ -28,7 +71,7 @@ examples/slop.zh-CN.md
   AI 味 100/100 · 评级 F · 34 处问题 · 其中 12 处可用 --fix 自动修复
 ```
 
-中英文 README 都能检查。提示语言跟随系统语言，可以用 `--lang en|zh` 指定。
+提示语言跟随系统语言，可以用 `--lang en|zh` 指定。另见[选项](#选项)、[GitHub Action](#github-action) 和[配置](#配置)。
 
 ## 规则
 
@@ -108,17 +151,6 @@ jobs:
           max-score: 25        # 超过就失败；留空则只标注
           lang: zh
 ```
-
-## Claude Code skill
-
-linter 负责找问题。把 `极致性能` 改写成 `单核每秒解析 1 GB`，需要能读懂代码的人。[`skills/dontreadme`](skills/dontreadme/SKILL.md) 里的 skill 会让 agent 先跑 `--fix`，再用仓库里的真实信息逐条改写剩下的问题，然后重新检查，直到评级到 A 或 B。
-
-```sh
-mkdir -p ~/.claude/skills/dontreadme
-curl -fsSL https://raw.githubusercontent.com/hiyufan/dontreadme/main/skills/dontreadme/SKILL.md -o ~/.claude/skills/dontreadme/SKILL.md
-```
-
-装好后对 Claude Code 说 “帮我清理一下 README” 就行。其他支持 `SKILL.md` 的 agent 用法相同。
 
 ## 选项
 

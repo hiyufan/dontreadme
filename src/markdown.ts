@@ -67,7 +67,10 @@ function splitBlocks(lines: string[]): Block[] {
 
     if (HTML.test(line)) {
       let j = i;
-      while (j + 1 < lines.length && !blank(lines[j + 1])) j++;
+      // A comment ends at its "-->"; other HTML runs to the next blank line, as in CommonMark.
+      const comment = /^ {0,3}<!--/.test(line);
+      if (comment) while (j + 1 < lines.length && !lines[j].includes("-->")) j++;
+      else while (j + 1 < lines.length && !blank(lines[j + 1])) j++;
       push("html", i, j);
       i = j + 1;
       continue;

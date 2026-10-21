@@ -101,8 +101,12 @@ export function main(argv: string[], cwd = process.cwd(), env = process.env): nu
   }
   if (args.help) return console.log(t.help()), 0;
   if (args.version) {
-    const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-    return console.log(pkg.version), 0;
+    // package.json sits next to dist/ in the npm package and next to scripts/ in the skill.
+    let version = "unknown";
+    try {
+      version = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+    } catch {}
+    return console.log(version), 0;
   }
   if (args.rules) return console.log(ruleList()), 0;
 

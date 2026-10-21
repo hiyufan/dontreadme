@@ -34,7 +34,7 @@ dontreadme is a linter with three users: a person at a terminal, a CI job, and a
 
 **Messages carry both languages.** A finding holds `{ en, zh }`. The reporter picks one at the end. Rules never branch on the locale, and JSON consumers get the language they asked for.
 
-**Fixes are edits, applied in passes.** A finding may carry text edits (`start`, `end`, `text`). The fixer sorts all edits, applies the ones that do not overlap, re-lints and repeats, at most five times. When two fixes touch the same text, the earlier one wins and the other is recomputed against the new text in the next pass. Rules only offer a fix when it is right in every sentence the pattern can match. Anything that needs judgment is left to a person or to the [Claude Code skill](skills/dontreadme/SKILL.md).
+**Fixes are edits, applied in passes.** A finding may carry text edits (`start`, `end`, `text`). The fixer sorts all edits, applies the ones that do not overlap, re-lints and repeats, at most five times. When two fixes touch the same text, the earlier one wins and the other is recomputed against the new text in the next pass. Rules only offer a fix when it is right in every sentence the pattern can match. Anything that needs judgment is left to a person or to the [Claude Code skill](SKILL.md).
 
 **The score is density.** Each finding has a weight: 3 for a warning, 1 for a note, more for findings that count something (dashes beyond the allowance, words beyond the paragraph limit). The score is weighted points per word, scaled so that the ripgrep README scores 3 and the examples in `examples/` score 100. A long README is not punished for being long.
 

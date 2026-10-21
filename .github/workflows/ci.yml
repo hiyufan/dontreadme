@@ -33,4 +33,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci && npm run build
-      - run: node dist/cli.js README.md README.zh-CN.md ARCHITECTURE.md --format github --max-score 10
+      - name: Skill scripts match the source
+        run: git diff --exit-code scripts
+      - run: node dist/cli.js README.md README.zh-CN.md ARCHITECTURE.md SKILL.md --format github --max-score 10

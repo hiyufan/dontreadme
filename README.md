@@ -9,11 +9,54 @@
 
 <b>English</b> · <a href="README.zh-CN.md">简体中文</a>
 
-A linter for READMEs that sound generated. It flags hype words, filler, the `it's not just X, it's Y` sentence, bullet lists that should be tables, emoji headings and walls of text, gives the file a score, and fixes the parts that need no judgment.
+A skill that makes your agent rewrite a README so it stops sounding generated. It checks the file with a built-in linter, applies the safe fixes, rewrites the rest using facts from your repository, and checks again. English and Chinese.
+
+**Before** (from [`examples/slop.md`](examples/slop.md), grade F):
+
+<!-- dontreadme-disable-next-line -->
+> In today's fast-paced digital landscape, developers need tools that keep up. FluxDB is not just another database — it's a complete reimagining of how data should flow through your application. Whether you're a solo hacker or an enterprise team, FluxDB seamlessly adapts to your workflow, empowering you to build robust, scalable applications with ease.
+
+**After** (an example rewrite, grade A, using only facts stated elsewhere in that file):
+
+> FluxDB is a key-value store with sub-millisecond reads, encryption at rest and in transit, and a plugin system. It deploys to AWS, GCP and Azure.
+
+## Install
+
+Claude Code:
+
+```text
+/plugin marketplace add hiyufan/dontreadme
+/plugin install dontreadme@dontreadme
+```
+
+Codex, Cursor, Gemini CLI and other agents:
+
+```sh
+npx skills add hiyufan/dontreadme
+```
+
+Claude.ai and Claude Desktop: download this repository as a ZIP (**Code → Download ZIP**) and upload it in **Settings → Capabilities → Skills**.
+
+## Use
+
+Ask in plain language:
+
+```text
+Clean up the README.
+帮我把 README 的 AI 味去掉。
+```
+
+Or call it directly with `/dontreadme`. The agent reports the score before and after, what it changed, and anything it left on purpose. It never invents numbers: a claim with no fact behind it in the repository is cut, not replaced.
+
+The linter inside the skill runs on Node 18 or newer with no install. Without Node, the agent works from the checklist in [`SKILL.md`](SKILL.md) instead.
+
+## Command line and CI
+
+The same linter is on npm for terminals and pipelines:
 
 ```sh
 npx dontreadme-cli            # checks ./README.md
-npx dontreadme-cli --fix      # rewrites the safe fixes in place
+npx dontreadme-cli --fix      # applies the fixes that need no judgment
 ```
 
 ```text
@@ -29,7 +72,7 @@ examples/slop.md
   slop score 100/100 · grade F · 53 findings · 16 fixable with --fix
 ```
 
-It reads English and Chinese, and its messages follow your system locale (`--lang en|zh` to override).
+Messages follow your system locale (`--lang en|zh` to override). See [Options](#options), the [GitHub Action](#github-action) and [Configuration](#configuration).
 
 ## Rules
 
@@ -109,17 +152,6 @@ jobs:
           max-score: 25        # fail above this; empty to only annotate
           lang: en             # or zh
 ```
-
-## Claude Code skill
-
-The linter finds problems. Rewriting `blazing fast` into `parses 1 GB in 0.8 s` needs someone who can read the code. The skill in [`skills/dontreadme`](skills/dontreadme/SKILL.md) has the agent run `--fix`, rewrite each remaining finding using facts from the repository, and re-run until the grade is A or B.
-
-```sh
-mkdir -p ~/.claude/skills/dontreadme
-curl -fsSL https://raw.githubusercontent.com/hiyufan/dontreadme/main/skills/dontreadme/SKILL.md -o ~/.claude/skills/dontreadme/SKILL.md
-```
-
-Then ask Claude Code to "clean up the README". It works the same in any agent that reads `SKILL.md` files.
 
 ## Options
 

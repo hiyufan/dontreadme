@@ -32,6 +32,11 @@ test("parser keeps code, URLs and HTML out of prose", () => {
   assert.match(doc.prose, /docs/);
 });
 
+test("an HTML comment ends at -->, so the line after it is still prose", () => {
+  const doc = parse("<!-- note -->\nA robust tool.");
+  assert.deepEqual(doc.blocks.map((b) => b.kind), ["html", "paragraph"]);
+});
+
 test("parser recognises headings, lists, tables, quotes and front matter", () => {
   const doc = parse(["---", "title: x", "---", "# A", "Setext", "===", "- one", "- two", "", "| a | b |", "| - | - |", "| 1 | 2 |", "", "> quote"].join("\n"));
   assert.deepEqual(

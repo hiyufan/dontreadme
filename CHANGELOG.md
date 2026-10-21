@@ -10,4 +10,5 @@ First release.
 - Slop score from 0 to 100 and a grade from A to F.
 - `--fix` for the changes that need no judgment, including turning `**Name**: description` lists into tables.
 - Output as text, JSON, or GitHub Actions annotations with a job summary.
-- GitHub Action and a Claude Code skill.
+- Ships as an agent skill first: `SKILL.md` at the root with the checker bundled in `scripts/`, so it runs with no install. Installs as a Claude Code plugin, with `npx skills add`, or as a ZIP on Claude.ai.
+- The same checker on npm as `dontreadme-cli`, plus a GitHub Action.

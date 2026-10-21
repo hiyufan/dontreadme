@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "dontreadme",
+  "description": "Rewrite a README so it stops sounding AI-generated, keeping every fact. English and Chinese.",
+  "version": "0.1.0",
+  "author": {
+    "name": "hiyufan",
+    "url": "https://github.com/hiyufan"
+  },
+  "homepage": "https://github.com/hiyufan/dontreadme",
+  "repository": "https://github.com/hiyufan/dontreadme",
+  "license": "MIT",
+  "keywords": ["readme", "writing", "editing", "ai-slop", "documentation"],
+  "skills": ["./"]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "dontreadme",
+  "owner": {
+    "name": "hiyufan",
+    "url": "https://github.com/hiyufan"
+  },
+  "description": "Install dontreadme as a Claude Code plugin.",
+  "plugins": [
+    {
+      "name": "dontreadme",
+      "source": "./",
+      "description": "Rewrite a README so it stops sounding AI-generated, keeping every fact. English and Chinese.",
+      "license": "MIT",
+      "keywords": ["readme", "writing", "editing", "ai-slop", "documentation"]
+    }
+  ]
+}

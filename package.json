@@ -39,8 +39,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p .",
-    "test": "npm run build && node --test test/lint.test.js test/cli.test.js",
+    "build": "tsc -p . && node tools/sync-skill.mjs",
+    "test": "npm run build && node --test test/lint.test.js test/cli.test.js test/skill.test.js",
     "start": "node dist/cli.js",
     "prepublishOnly": "npm test"
   },
