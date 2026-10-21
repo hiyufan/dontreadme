@@ -11,7 +11,7 @@ test("the skill's bundled checker runs on its own", () => {
   const cli = fileURLToPath(new URL("scripts/cli.js", root));
   const r = spawnSync(process.execPath, [cli, "-", "--json"], { input: "A robust tool.", encoding: "utf8", env: { ...process.env, DONTREADME_LANG: "en" } });
   assert.equal(r.status, 0, r.stderr);
-  assert.equal(JSON.parse(r.stdout)[0].findings[0].rule, "hype");
+  assert.ok(JSON.parse(r.stdout)[0].findings.some((f) => f.rule === "hype"));
 });
 
 test("SKILL.md front matter, plugin manifests and package agree on name and version", () => {

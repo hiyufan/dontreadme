@@ -1,6 +1,6 @@
 ---
 name: dontreadme
-description: Rewrite a README (or other project docs) so it stops sounding AI-generated, keeping every fact. Use when the user asks to clean up, de-slop, tighten, humanize or review a README, docs page or release notes, or before publishing a repository. Works on English and Chinese.
+description: Rewrite a README (or other project docs) so it stops sounding AI-generated and has what a visitor needs (intro, install, example, license), keeping every fact. Use when the user asks to clean up, improve, de-slop, tighten, humanize or review a README, docs page or release notes, or before publishing a repository. Works on English and Chinese.
 license: MIT
 metadata:
   version: "0.1.0"
@@ -8,7 +8,7 @@ metadata:
 
 # dontreadme
 
-Rewrite the README so a reader trusts it: plain claims, facts from the repository, nothing that reads like a chatbot or a sales page. Keep every command, flag, number, path, link and code block. Never invent a fact to replace a claim.
+Rewrite the README so a reader trusts it and can use the project: plain claims, facts from the repository, nothing that reads like a chatbot or a sales page, and the sections a visitor looks for. Keep every command, flag, number, path, link and code block. Never invent a fact to replace a claim.
 
 ## 1. Check
 
@@ -51,9 +51,20 @@ Then rewrite each remaining finding by its rule:
 | `badge-wall` | Keep version, CI and license badges. Ask before removing others. |
 | `late-quickstart` | Move install and the shortest working example above the first long section. |
 
+Then fill what the README is missing. Every addition must come from the repository: read the package manifest, the CLI's `--help`, the examples or tests, the LICENSE file. If the repository does not have it, tell the user what is missing instead of writing it.
+
+| Rule | What to add |
+| --- | --- |
+| `no-intro` | One sentence under the title: what it does and for whom. Take it from the package description or the code, not from the old marketing copy. |
+| `no-install` | The one command that installs or runs it, from the manifest (`package.json` name and `bin`, `pyproject.toml`, `Cargo.toml`, a Dockerfile, a release asset). |
+| `no-usage` | The shortest real example and what it prints or returns. Run it if you can; copy real output, never invent it. |
+| `no-demo` | Do not create an image. Tell the user a screenshot or recording would help and where to put it. If one already exists in the repository (`docs/`, `assets/`), link it near the top. |
+| `no-license` | A `## License` section naming the license in the LICENSE file. If there is no LICENSE file, ask the user. |
+| `no-toc` | A short list of links to the `##` sections, placed before the first one. |
+
 ## 3. Verify
 
-Run the check again. Stop when the grade is A or B, or when what remains is a deliberate choice. Then give the user a short summary: the score before and after, what kinds of changes you made, and any findings you left on purpose and why. Do not paste the whole README back.
+Run the check again. Stop when the grade is A or B and no `no-` finding is left that the repository could answer, or when what remains is a deliberate choice. Then give the user a short summary: the score before and after, what kinds of changes you made, and any findings you left on purpose and why. Do not paste the whole README back.
 
 ## Words that are fine
 

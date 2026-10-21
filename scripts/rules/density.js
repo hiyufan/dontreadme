@@ -95,25 +95,24 @@ export const lateQuickstart = {
     severity: "warn",
     summary: { en: "No install or run command in the first screen", zh: "第一屏里看不到安装或运行命令" },
     check(doc) {
-        if (doc.lines.length < MIN_LINES)
+        if (!doc.readme || doc.lines.length < MIN_LINES)
             return [];
         const first = doc.blocks.find((b) => b.kind === "code" && SHELL.has(b.lang));
         // A screen is roughly 40 lines of rendered README, less once there is a banner.
+        // No command at all is no-install's finding, not this one.
         const limit = Math.max(40, Math.round(doc.lines.length * 0.3));
-        if (first && first.start < limit)
+        if (!first || first.start < limit)
             return [];
         return [
             {
                 rule: this.id,
                 severity: this.severity,
-                line: first ? first.start + 1 : 1,
+                line: first.start + 1,
                 col: 1,
-                message: first
-                    ? {
-                        en: `The first command is on line ${first.start + 1}. Put install and a one-line example near the top.`,
-                        zh: `第一条命令在第 ${first.start + 1} 行。把安装和一行示例放到最前面。`,
-                    }
-                    : { en: "No install or run command anywhere. Show how to try it.", zh: "全文没有安装或运行命令。告诉读者怎么上手试。" },
+                message: {
+                    en: `The first command is on line ${first.start + 1}. Put install and a one-line example near the top.`,
+                    zh: `第一条命令在第 ${first.start + 1} 行。把安装和一行示例放到最前面。`,
+                },
             },
         ];
     },

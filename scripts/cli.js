@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { appendFileSync, existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
-import { dirname, relative, resolve } from "node:path";
+import { basename, dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { findConfig, readConfig } from "./config.js";
 import { setLang, t } from "./i18n.js";
@@ -124,8 +124,10 @@ export function main(argv, cwd = process.cwd(), env = process.env) {
         }
         const name = path === "-" ? "<stdin>" : relative(cwd, path) || file;
         let text = read(path);
+        // Only a README is expected to have install steps, a demo and a license.
+        const readme = path === "-" || /^readme/i.test(basename(path));
         if (args.fix) {
-            const r = fix(text, config);
+            const r = fix(text, config, { readme });
             if (args.stdout) {
                 process.stdout.write(r.text);
                 continue;
@@ -135,7 +137,7 @@ export function main(argv, cwd = process.cwd(), env = process.env) {
             console.error(r.fixed ? t.fixed(name, r.fixed) : t.nothingToFix(name));
             text = r.text;
         }
-        const l = lint(text, config);
+        const l = lint(text, config, undefined, { readme });
         results.push({ file: name, ...l });
         const max = args.maxScore ?? config.maxScore;
         if (max !== undefined && l.score > max) {

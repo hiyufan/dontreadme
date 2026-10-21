@@ -97,6 +97,14 @@ Messages follow your system locale (`--lang en|zh` to override). See [Options](#
 | `exclamation` | `!` at the end of prose sentences | ✓ | |
 | `badge-wall` | More than 6 badges | | |
 | `late-quickstart` | No shell command in the first 40 lines | | |
+| `no-intro` | Nothing under the title says what the project is | | |
+| `no-install` | No install command or install section | | |
+| `no-usage` | No usage example beyond the install line | | |
+| `no-demo` | No screenshot, GIF or recording (note) | | |
+| `no-license` | No license mentioned (note) | | |
+| `no-toc` | 8+ sections and 1500+ words without a table of contents (note) | | |
+
+The `no-` rules only run on files named `README*`. They say what is missing; the skill fills it from the repository and never invents it.
 
 Code blocks, inline code, URLs and HTML are never checked, so `--seamless` as a flag name is fine. A phrase inside quotation marks is being talked about, not used, so it is skipped too.
 

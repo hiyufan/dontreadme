@@ -8,7 +8,7 @@ const HTML = /^ {0,3}<(\/?[a-zA-Z][\w-]*|!--)/;
 const TABLE_SEP = /^\s*\|?\s*:?-{1,}:?\s*(\|\s*:?-{1,}:?\s*)+\|?\s*$/;
 const RULE = /^ {0,3}([-*_])(\s*\1){2,}\s*$/;
 const blank = (s) => s === undefined || s.trim() === "";
-export function parse(text) {
+export function parse(text, readme = true) {
     const lines = text.split("\n");
     const lineStart = [];
     let off = 0;
@@ -20,7 +20,7 @@ export function parse(text) {
     const prose = maskProse(text, lines, lineStart, blocks);
     const latin = prose.match(/[A-Za-z0-9][\w'’-]*/g)?.length ?? 0;
     const han = prose.match(/\p{Script=Han}/gu)?.length ?? 0;
-    return { text, lines, lineStart, blocks, prose, words: wordCount(prose), cjk: han / 2 > latin };
+    return { text, lines, lineStart, blocks, prose, words: wordCount(prose), cjk: han / 2 > latin, readme };
 }
 function splitBlocks(lines) {
     const out = [];

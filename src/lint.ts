@@ -13,8 +13,13 @@ export interface Lint {
 
 // Pipeline: parse → run rules → drop what the author silenced → score.
 // Rules never see the config or each other, so each can be tested on its own.
-export function lint(text: string, config: Config = defaultConfig(), rules: Rule[] = allRules): Lint {
-  const doc = parse(text.replace(/\r\n?/g, "\n"));
+export interface LintOptions {
+  /** Whether the text is a README. Defaults to true; the CLI decides from the file name. */
+  readme?: boolean;
+}
+
+export function lint(text: string, config: Config = defaultConfig(), rules: Rule[] = allRules, opts: LintOptions = {}): Lint {
+  const doc = parse(text.replace(/\r\n?/g, "\n"), opts.readme ?? true);
   const silenced = directives(doc.lines);
   const allow = config.allow.map((a) => a.toLowerCase());
   const findings: Finding[] = [];
@@ -79,11 +84,11 @@ export function applyEdits(text: string, edits: Edit[]): { text: string; applied
 }
 
 /** Fix what can be fixed without judgment. Re-lints between passes, since one fix can move or reveal another. */
-export function fix(text: string, config: Config = defaultConfig()): { text: string; fixed: number } {
+export function fix(text: string, config: Config = defaultConfig(), opts: LintOptions = {}): { text: string; fixed: number } {
   let fixed = 0;
   text = text.replace(/\r\n?/g, "\n");
   for (let pass = 0; pass < 5; pass++) {
-    const edits = lint(text, config).findings.flatMap((f) => f.fix ?? []);
+    const edits = lint(text, config, allRules, opts).findings.flatMap((f) => f.fix ?? []);
     if (!edits.length) break;
     const r = applyEdits(text, edits);
     if (r.text === text) break;

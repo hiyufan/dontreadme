@@ -13,7 +13,7 @@ const RULE = /^ {0,3}([-*_])(\s*\1){2,}\s*$/;
 
 const blank = (s: string | undefined) => s === undefined || s.trim() === "";
 
-export function parse(text: string): Doc {
+export function parse(text: string, readme = true): Doc {
   const lines = text.split("\n");
   const lineStart: number[] = [];
   let off = 0;
@@ -25,7 +25,7 @@ export function parse(text: string): Doc {
   const prose = maskProse(text, lines, lineStart, blocks);
   const latin = prose.match(/[A-Za-z0-9][\w'’-]*/g)?.length ?? 0;
   const han = prose.match(/\p{Script=Han}/gu)?.length ?? 0;
-  return { text, lines, lineStart, blocks, prose, words: wordCount(prose), cjk: han / 2 > latin };
+  return { text, lines, lineStart, blocks, prose, words: wordCount(prose), cjk: han / 2 > latin, readme };
 }
 
 function splitBlocks(lines: string[]): Block[] {

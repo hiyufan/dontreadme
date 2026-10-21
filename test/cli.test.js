@@ -10,6 +10,9 @@ const cli = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 const env = { ...process.env, DONTREADME_LANG: "en", NO_COLOR: "1" };
 const run = (args, cwd) => spawnSync(process.execPath, [cli, ...args], { cwd, env, encoding: "utf8" });
 
+// A README with everything the section rules ask for, so tests can add one problem at a time.
+const complete = (line) => `# t\n\n${line}\n\n![demo](demo.png)\n\n\`\`\`sh\nnpm i t\nt run\n\`\`\`\n\nMIT license.\n`;
+
 function project(readme, rc) {
   const dir = mkdtempSync(join(tmpdir(), "dontreadme-"));
   writeFileSync(join(dir, "README.md"), readme);
@@ -26,23 +29,22 @@ test("checks ./README.md by default and exits 0 without --max-score", () => {
 });
 
 test("--max-score fails the run, from the flag or the config", () => {
-  assert.equal(run(["--max-score", "10"], project("A robust, powerful tool.")).status, 1);
-  assert.equal(run([], project("A robust, powerful tool.", { maxScore: 10 })).status, 1);
-  assert.equal(run(["--max-score", "10"], project("A tool that reads 10 GB/s.")).status, 0);
+  assert.equal(run(["--max-score", "10"], project(complete("A robust, powerful tool for charts."))).status, 1);
+  assert.equal(run([], project(complete("A robust, powerful tool for charts."), { maxScore: 10 })).status, 1);
+  assert.equal(run(["--max-score", "10"], project(complete("A tool that reads 10 GB/s."))).status, 0);
 });
 
 test("--json is machine-readable", () => {
-  const out = JSON.parse(run(["--json"], project("A robust tool.")).stdout);
+  const out = JSON.parse(run(["--json"], project(complete("A robust tool for charts."))).stdout);
   assert.equal(out[0].file, "README.md");
-  assert.equal(out[0].findings[0].rule, "hype");
-  assert.equal(out[0].findings[0].text, "robust");
+  assert.deepEqual(out[0].findings.map((f) => [f.rule, f.text]), [["hype", "robust"]]);
 });
 
 test("--format github writes annotations and a step summary", () => {
-  const dir = project("A robust tool.");
+  const dir = project(complete("A robust tool for charts."));
   const summary = join(dir, "summary.md");
   const r = spawnSync(process.execPath, [cli, "--format", "github"], { cwd: dir, env: { ...env, GITHUB_STEP_SUMMARY: summary }, encoding: "utf8" });
-  assert.match(r.stdout, /^::warning file=README\.md,line=1,col=3,title=dontreadme hype::/m);
+  assert.match(r.stdout, /^::warning file=README\.md,line=3,col=3,title=dontreadme hype::/m);
   assert.match(readFileSync(summary, "utf8"), /\| `README\.md` \| \d+ \| [A-F] \| 1 \|/);
 });
 
@@ -60,7 +62,7 @@ test("reads stdin with -", () => {
 });
 
 test("--badge prints a shields.io badge", () => {
-  assert.match(run(["--badge"], project("Plain text.")).stdout, /img\.shields\.io\/badge\/readme%20slop-0%2F100%20A-brightgreen/);
+  assert.match(run(["--badge"], project(complete("Plain text about a chart tool."))).stdout, /img\.shields\.io\/badge\/readme%20slop-0%2F100%20A-brightgreen/);
 });
 
 test("usage errors exit 2", () => {

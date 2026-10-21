@@ -6,7 +6,8 @@ import { setLang } from "../dist/i18n.js";
 
 setLang("en");
 
-const ids = (text, config) => lint(text, config).findings.map((f) => f.rule);
+// Rule tests run as a plain docs page, so the README section rules stay out of the way.
+const ids = (text, config) => lint(text, config, undefined, { readme: false }).findings.map((f) => f.rule);
 const example = (name) => readFileSync(new URL(`../examples/${name}`, import.meta.url), "utf8");
 
 test("parser keeps code, URLs and HTML out of prose", () => {
@@ -110,20 +111,22 @@ test("exclamation marks are flagged and fixed, image syntax is not", () => {
   assert.deepEqual(ids("a != b"), []);
 });
 
-test("long paragraphs, badge walls and a missing quickstart", () => {
+test("long paragraphs, badge walls and a late quickstart", () => {
   assert.deepEqual(ids("word ".repeat(81)), ["long-paragraph"]);
   const badges = Array.from({ length: 7 }, (_, i) => `![b](https://img.shields.io/badge/b-${i}-blue)`).join(" ");
   assert.deepEqual(ids(badges), ["badge-wall"]);
-  const noCode = Array.from({ length: 30 }, (_, i) => `Line ${i}.\n`).join("\n");
-  assert.deepEqual(ids(noCode), ["late-quickstart"]);
-  assert.deepEqual(ids("```sh\nnpm i x\n```\n" + noCode), []);
+  const filler = Array.from({ length: 50 }, (_, i) => `Line ${i}.\n`).join("\n");
+  const late = (t) => lint(t).findings.some((f) => f.rule === "late-quickstart");
+  assert.ok(late(filler + "\n```sh\nnpm i x\n```\n"));
+  assert.ok(!late("```sh\nnpm i x\n```\n" + filler));
+  assert.ok(!late(filler), "no command at all is no-install's finding");
 });
 
 test("config turns rules off, changes severity and allows phrases", () => {
   const text = "A robust and powerful tool.";
   assert.deepEqual(ids(text, validate({ rules: { hype: "off" } })), []);
   assert.deepEqual(
-    lint(text, validate({ rules: { hype: "info" } })).findings.map((f) => f.severity),
+    lint(text, validate({ rules: { hype: "info" } }), undefined, { readme: false }).findings.map((f) => f.severity),
     ["info", "info"],
   );
   assert.deepEqual(ids(text, validate({ allow: ["Robust"] })), ["hype"]);
@@ -154,7 +157,8 @@ test("fix is idempotent", () => {
 });
 
 test("score scales with density and grades follow it", () => {
-  assert.equal(lint("A robust tool.").score > lint("```sh\nx\n```\n\nA robust tool.\n\n" + "Plain words here.\n\n".repeat(300)).score, true);
+  const plain = (t) => lint(t, undefined, undefined, { readme: false });
+  assert.equal(plain("A robust tool.").score > plain("```sh\nx\n```\n\nA robust tool.\n\n" + "Plain words here.\n\n".repeat(300)).score, true);
   assert.deepEqual([0, 9, 10, 24, 25, 44, 45, 69, 70, 100].map(grade), ["A", "A", "B", "B", "C", "C", "D", "D", "F", "F"]);
 });
 
@@ -208,4 +212,31 @@ test("bold sprinkled through prose", () => {
 
 test("Chinese em dashes count too", () => {
   assert.deepEqual(ids("甲——乙——丙——丁——戊"), ["em-dash"]);
+});
+
+test("README sections: intro, install, usage, demo, license, table of contents", () => {
+  const readme = (t) => lint(t).findings.map((f) => f.rule).filter((r) => r.startsWith("no-"));
+  assert.deepEqual(readme("# Tool\n\n## Usage\n\ntext"), ["no-intro", "no-install", "no-license"]);
+  const good = [
+    "# tool",
+    "",
+    "### Turns CSV files into charts from the terminal.",
+    "",
+    "![demo](demo.gif)",
+    "",
+    "```sh",
+    "npm install -g tool",
+    "tool data.csv",
+    "```",
+    "",
+    "MIT licensed.",
+  ].join("\n");
+  assert.deepEqual(readme(good), []);
+  // Badges are not a demo, and other docs pages are not READMEs.
+  assert.ok(readme("# T\n\nA small tool for one job. " + "word ".repeat(160) + "\n\n![ci](https://img.shields.io/badge/ci-ok-green)").includes("no-demo"));
+  assert.deepEqual(lint("# Design notes", undefined, undefined, { readme: false }).findings, []);
+  const long = "# T\n\nA tool that does one thing well enough.\n\n" + Array.from({ length: 9 }, (_, i) => `## Part ${i}\n\n${"word ".repeat(200)}`).join("\n\n");
+  assert.ok(readme(long).includes("no-toc"));
+  const toc = long.replace("## Part 0", "- [a](#a)\n- [b](#b)\n- [c](#c)\n\n## Part 0");
+  assert.ok(!readme(toc).includes("no-toc"));
 });

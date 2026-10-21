@@ -38,6 +38,8 @@ export interface Doc {
   words: number;
   /** True when most of the prose is Chinese. */
   cjk: boolean;
+  /** A README, as opposed to another docs page. Rules about what a README must contain only run on these. */
+  readme: boolean;
 }
 
 export interface Finding {

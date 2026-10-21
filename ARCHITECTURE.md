@@ -28,6 +28,8 @@ dontreadme is a linter with three users: a person at a terminal, a CI job, and a
 
 **Rules are pure.** A rule gets the parsed document and returns findings. It does not read the config, the locale or other rules. Severity overrides, `allow` lists and `<!-- dontreadme-disable -->` directives are applied afterwards in `lint.ts`. Any rule can be tested by handing it a string.
 
+**Missing is not wrong.** The `no-` rules in `src/rules/sections.ts` report what a README lacks (an intro, an install command, an example, a demo, a license, a table of contents). They only run when `Doc.readme` is true, which the CLI sets from the file name, so a docs page is not told to add an install section. They never offer a fix: the content has to come from the repository, which is the skill's job.
+
 **Phrases are data, and each has a source.** Hype, filler, wordy and the other phrase rules are lists of patterns with an optional replacement. The rule writes the message, so adding a phrase is one line and cannot produce an inconsistent message. Every list is tagged with where its patterns come from: measured word frequencies (Kobak et al. 2025), Wikipedia's field guide, or a measured Chinese corpus. A pattern that only feels generated does not get in.
 
 **Mentioned is not used.** A phrase directly inside quotation marks (`“seamless”`, `「赋能」`) is being discussed, so phrase rules skip it. Chat artefacts in links (`utm_source=chatgpt.com`) are read from the raw text, since the prose mask hides URLs, but are skipped inside code.
