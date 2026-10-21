@@ -11,6 +11,8 @@
 
 一个让 agent 帮你改 README 的 skill，目标是读起来不像 AI 写的。它先用内置的 linter 检查文件，自动修掉不需要判断的部分，再用仓库里的真实信息改写剩下的问题，最后复查一遍。中英文都支持。
 
+<img src="docs/demo.zh-CN.gif" alt="dontreadme 在一份 AI 生成的 README 里找出 34 处问题（F），自己的 README 是 A" width="800">
+
 **改写前**（[`examples/slop.zh-CN.md`](examples/slop.zh-CN.md)，评级 F）：
 
 <!-- dontreadme-disable-next-line -->

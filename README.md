@@ -11,6 +11,8 @@
 
 A skill that makes your agent rewrite a README so it stops sounding generated. It checks the file with a built-in linter, applies the safe fixes, rewrites the rest using facts from your repository, and checks again. English and Chinese.
 
+<img src="docs/demo.gif" alt="dontreadme flags 53 findings in a generated README (grade F), then passes its own README (grade A)" width="800">
+
 **Before** (from [`examples/slop.md`](examples/slop.md), grade F):
 
 <!-- dontreadme-disable-next-line -->
